@@ -1,0 +1,8 @@
+#Ignorar todo por default
+*
+
+#Lista Blanca
+!.gitignore
+!*/
+!*.md
+!*.py
