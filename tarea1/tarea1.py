@@ -1,3 +1,6 @@
+def funcion_loca():
+    pass
+
 if __name__=="__main__":
     import os
     import re
@@ -68,7 +71,7 @@ if __name__=="__main__":
     d = "[" + d + "]"
     a = "[" + a + "]"
 
-    patron:str = f"{d}(\.?{a}+)*\.?{iniciales}(\.?{a}+)*.{perfil.matricula}"
+    patron:str = f"{d}(\.?{a})*\.?{iniciales}(\.?{a})*.{perfil.matricula}"
     regex:re.Pattern = re.compile(patron)
 
     while True:
@@ -84,5 +87,3 @@ if __name__=="__main__":
             salida = "No"
         print(f"Es cadena Valida?: {salida}")
         input()
-
-        
