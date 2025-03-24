@@ -1,6 +1,3 @@
-def funcion_loca():
-    pass
-
 if __name__=="__main__":
     import os
     import re
