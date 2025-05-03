@@ -110,10 +110,15 @@ if __name__=="__main__":
 
     perfil:Perfil = escoger_perfil(perfiles_base)
     config:ConfigLIC = generar_configuracion(perfil)
+    lic:str = ("{ " + f"{config.matricula}({config.iniciales_ap})^n{config.matricula}"
+            f"({config.iniciales_ap_inv})^2n{config.nombre}{config.nombre}" + " }")
+    
 
     while True:
         clear()
         print("Analizador de Cadenas | Presione Ctrl+C para salir")
+        print(f"LIC: {lic}")
+        print("Introduzca una cadena para analizar")
         cadena:str = input("> ")
         print("Cadena Valida" if es_cadena_valida(cadena, config) else "Cadena Invalida")
         input("...")
