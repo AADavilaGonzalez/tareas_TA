@@ -3,6 +3,14 @@ from collections import deque
 from dataclasses import dataclass
 from typing import Callable, Any
 
+from turing import TuringInput, TuringOutput, Symbol, State, Move, delta
+
+def tk_widget_get_config(widget:tk.Widget) -> dict[str,str]:
+    return {k:widget.cget(k) for k in widget.keys()}
+
+def tk_widget_set_config(widget:tk.Widget, config:dict[str,str]):
+    widget.configure(**config)
+
 @dataclass
 class TkTapeCell:
     box_id:int
@@ -12,7 +20,7 @@ class TkSlideTape(tk.Canvas):
 
     def __init__(self, parent:tk.Widget, visible_cells:int=9,
             cell_border_width:int=5, cell_border_color:str="black",
-            default_char:str="?", speed:float=200,fps:float=60,
+            default_char:str="?", default_speed:int=200, default_fps:int=60,
             font:tuple[str,int,str]=("Arial", 16, "bold"),
             **kwargs) -> None:
         super().__init__(parent, **kwargs)
@@ -26,8 +34,17 @@ class TkSlideTape(tk.Canvas):
         self.font = font
         self.default_char = default_char[0]
 
-        self.speed = speed if speed >= 1 else 100 #px/frame
-        self.fps = fps if fps >= 1 else 60 #fps
+        self.speed = tk.IntVar() #px/frame
+        if(default_speed > 0):
+            self.speed.set(default_speed)
+        else:
+            self.speed.set(200)
+
+        self.fps = tk.IntVar() #fps
+        if(default_fps > 0):
+            self.fps.set(default_fps)
+        else:
+            self.speed.set(60)
 
         self.cell_length:float = None
         self.cells:deque[TkTapeCell] = None
@@ -78,17 +95,18 @@ class TkSlideTape(tk.Canvas):
         self.cells.rotate(-1)
 
         animated_cells = list(self.cells)[:-1]
-        framecount = round(self.fps*(self.cell_length/self.speed))
+        fps = self.fps.get()
+        framecount = round(fps*(self.cell_length/self.speed.get()))
         pixels_per_frame = self.cell_length/framecount
 
         def slide_cells_right():
-            nonlocal animated_cells, framecount, pixels_per_frame
+            nonlocal animated_cells, fps, framecount, pixels_per_frame
             if framecount > 0:
                 for cell in animated_cells:
                     self.move(cell.box_id, -pixels_per_frame, 0)
                     self.move(cell.char_id, -pixels_per_frame, 0)
                 framecount-=1
-                self.after(int((1/self.fps)*1000), slide_cells_right)
+                self.after(int((1/fps)*1000), slide_cells_right)
             else:
                 if(on_complete):
                     on_complete()
@@ -103,18 +121,78 @@ class TkSlideTape(tk.Canvas):
         self.cells.rotate(1)
         
         animated_cells = list(self.cells)[1:]
-        framecount = round(self.fps*(self.cell_length/self.speed))
+        fps = self.fps.get()
+        framecount = round(fps*(self.cell_length/self.speed.get()))
         pixels_per_frame = self.cell_length/framecount
 
         def slide_cells_left():
-            nonlocal animated_cells, framecount, pixels_per_frame
+            nonlocal animated_cells, fps, framecount, pixels_per_frame
             if framecount > 0:
                 for cell in animated_cells:
                     self.move(cell.box_id, pixels_per_frame, 0)
                     self.move(cell.char_id, pixels_per_frame, 0)
                 framecount-=1
-                self.after(int((1/self.fps)*1000), slide_cells_left)
+                self.after(int((1/fps)*1000), slide_cells_left)
             else:
                 if(on_complete):
                     on_complete()
         slide_cells_left()
+
+
+def process_string_gui(input_entry:tk.Entry, slide_tape:TkSlideTape, success_label:tk.Label,
+    success_label_default:dict[str,str]):
+        
+        tk_widget_set_config(success_label, success_label_default)
+
+        WAIT_TIME = 333
+        string:str = Symbol._.value + input_entry.get() + Symbol._.value
+        turing_tape:list[str] = list(string)
+
+        it = iter(slide_tape.cells)
+        for _ in range((slide_tape.visible_cells+2)//2):
+            slide_tape.itemconfig(next(it).char_id, text=slide_tape.default_char)
+        for i in range(len(turing_tape)):
+            try:
+                slide_tape.itemconfig(next(it).char_id, text=turing_tape[i])
+            except(StopIteration):
+                break
+        while True:
+            try:
+                slide_tape.itemconfig(next(it).char_id, text=slide_tape.default_char)
+            except(StopIteration):
+                break
+
+        def turing_step(state:State, pos:int) -> None:
+            nonlocal slide_tape
+            nonlocal turing_tape
+            if state==State.qf:
+                success_label.config(text="Cadena Valida")
+                return 
+            output:TuringOutput = delta(TuringInput(state, Symbol(turing_tape[pos])))
+            if not output or pos not in range(len(turing_tape)):
+                success_label.config(text="Cadena Invalida")
+                return
+            middle_cell:TkTapeCell = slide_tape.cells[(slide_tape.visible_cells+2)//2]
+            slide_tape.itemconfig(middle_cell.char_id, text=output.s.value)
+            turing_tape[pos]=output.s.value
+            pos+=output.m
+            if output.m==Move.R:
+                edge_pos=pos+slide_tape.visible_cells//2
+                next_char = turing_tape[edge_pos] if edge_pos in range(pos) else slide_tape.default_char
+                try:
+                    slide_tape.move_right(next_char, lambda:slide_tape.after(
+                        WAIT_TIME,lambda:turing_step(output.q, pos)))
+                except(tk.TclError):
+                    return
+            elif output.m==Move.L:
+                edge_pos=pos-slide_tape.visible_cells//2
+                next_char = turing_tape[edge_pos] if edge_pos in range(pos) else slide_tape.default_char
+                try:
+                    slide_tape.move_left(next_char, lambda:slide_tape.after(
+                        WAIT_TIME, lambda:turing_step(output.q, pos)))
+                except(tk.TclError):
+                    return
+            else:
+                slide_tape.after(WAIT_TIME, turing_step(output.q, pos))
+        turing_step(State.qi, 0)
+            
