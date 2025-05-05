@@ -13,7 +13,7 @@ class State(Enum):
 class Symbol(Enum):
     a = "a"
     b = "b"
-    _ = "_" 
+    _ = "␢" 
 
 class Move(IntEnum):
     L = -1
@@ -89,12 +89,3 @@ def process_string(string:str) -> bool:
         except(ValueError,AttributeError,IndexError):
             return False
     return True
-
-import tkinter as tk
-
-class TkTuringMachine(tk.Frame):
-    
-    def __init__(self, parent, slots=5,**kwargs):
-        super().__init__(parent, **kwargs)
-
-        for()
