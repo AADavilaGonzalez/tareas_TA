@@ -48,6 +48,25 @@ class TkSlideTape(tk.Canvas):
 
         self.cell_length:float = None
         self.cells:deque[TkTapeCell] = None
+        
+        self.state_label = tk.Label(
+    self,
+    text="qi",  # Estado inicial
+    font=("Helvetica", 14, "bold"),
+    bg="red",
+    fg="white",
+    width=6,             
+    anchor="center")
+
+    
+    def update_state_display(self, state: State) -> None:
+        self.state_label.config(text=state.name)
+        if state == State.qf:
+            self.state_label.config(bg="green")
+        else:
+            self.state_label.config(bg="red")
+
+
     
     def pack(self, **kwargs) -> None:
         super().pack(**kwargs)
@@ -69,10 +88,7 @@ class TkSlideTape(tk.Canvas):
         self.cell_length = width/self.visible_cells
         half_length = self.cell_length/2
 
-        self.create_rectangle(
-            (width-half_length)//2, (height-half_length)//2-self.cell_length,
-            (width+half_length)//2, (height+half_length)//2-self.cell_length,
-            fill="red")
+        self.state_label.place(x=(width - self.state_label.winfo_reqwidth()) // 2, y=10)
 
         xoffset = width//2 - self.cell_length*(self.visible_cells//2+1)
         yoffset = height//2
@@ -172,6 +188,7 @@ def process_string_gui(input_entry:tk.Entry, slide_tape:TkSlideTape, success_lab
             if not output or pos not in range(len(turing_tape)):
                 success_label.config(text="Cadena Invalida")
                 return
+            slide_tape.update_state_display(state)
             middle_cell:TkTapeCell = slide_tape.cells[(slide_tape.visible_cells+2)//2]
             slide_tape.itemconfig(middle_cell.char_id, text=output.s.value)
             turing_tape[pos]=output.s.value

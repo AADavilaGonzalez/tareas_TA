@@ -8,6 +8,8 @@ from gui import TkSlideTape, process_string_gui, tk_widget_get_config, tk_widget
 if __name__=="__main__":
     
     root = tk.Tk()
+    root.title("PIA Teoría de Autómatas")
+
     root.rowconfigure(0, weight=1)
     root.rowconfigure(1, weight=5)
     root.rowconfigure(2, weight=1)
