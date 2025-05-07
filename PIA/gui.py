@@ -51,15 +51,15 @@ class TkSlideTape(tk.Canvas):
     
     def pack(self, **kwargs) -> None:
         super().pack(**kwargs)
-        self._draw_initial_state()
+        self.after(100, self._draw_initial_state)
 
     def grid(self, **kwargs) -> None:
         super().grid(**kwargs)
-        self._draw_initial_state()
+        self.after(100, self._draw_initial_state)
 
     def palace(self, **kwargs) -> None:
         super().place(**kwargs)
-        self._draw_initial_state()
+        self.after(100, self._draw_initial_state)
 
     def _draw_initial_state(self) -> None:
         self.update_idletasks()
