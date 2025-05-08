@@ -187,11 +187,11 @@ def process_string_gui(input_entry:tk.Entry, slide_tape:TkSlideTape, success_lab
             nonlocal turing_tape
             if state == State.qf:
                 slide_tape.update_state_display(state)
-                success_label.config(text="Cadena Valida")
+                success_label.config(text="Cadena Válida", bg="green", fg="white")
                 return
             output:TuringOutput = delta(TuringInput(state, Symbol(turing_tape[pos])))
             if not output or pos not in range(len(turing_tape)):
-                success_label.config(text="Cadena Invalida")
+                success_label.config(text="Cadena Inválida", bg="red", fg="white")
                 return
             slide_tape.update_state_display(state)
             middle_cell:TkTapeCell = slide_tape.cells[(slide_tape.visible_cells+2)//2]
