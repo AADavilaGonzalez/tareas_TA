@@ -5,6 +5,8 @@ from typing import Callable, Any
 
 from turing import TuringInput, TuringOutput, Symbol, State, Move, delta
 
+GLOBAL_FONT="Arial"
+
 def tk_widget_get_config(widget:tk.Widget) -> dict[str,str]:
     return {k:widget.cget(k) for k in widget.keys()}
 
@@ -21,7 +23,7 @@ class TkSlideTape(tk.Canvas):
     def __init__(self, parent:tk.Widget, visible_cells:int=9,
             cell_border_width:int=5, cell_border_color:str="black",
             default_char:str="?", default_speed:int=200, default_fps:int=60,
-            font:tuple[str,int,str]=("Arial", 16, "bold"),
+            font:tuple[str,int,str]=(GLOBAL_FONT, 16, "bold"),
             **kwargs) -> None:
         super().__init__(parent, **kwargs)
         if visible_cells < 1:
@@ -50,13 +52,13 @@ class TkSlideTape(tk.Canvas):
         self.cells:deque[TkTapeCell] = None
         
         self.state_label = tk.Label(
-    self,
-    text="qi",  # Estado inicial
-    font=("Helvetica", 14, "bold"),
-    bg="red",
-    fg="white",
-    width=6,             
-    anchor="center")
+            self,
+            text="qi",  # Estado inicial
+            font=(GLOBAL_FONT, 14, "bold"),
+            bg="red",
+            fg="white",
+            width=6,             
+            anchor="center")
 
     
     def update_state_display(self, state: State) -> None:
