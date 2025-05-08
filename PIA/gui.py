@@ -157,7 +157,11 @@ class TkSlideTape(tk.Canvas):
 
 def process_string_gui(input_entry:tk.Entry, slide_tape:TkSlideTape, success_label:tk.Label,
     success_label_default:dict[str,str]):
-        
+        invalid_chars = [c for c in input_entry.get() if c not in [s.value for s in Symbol]]
+        if invalid_chars:
+            success_label.config(text=f"Caracteres inválidos: {', '.join(invalid_chars)}")
+            return
+
         tk_widget_set_config(success_label, success_label_default)
 
         WAIT_TIME = 333
@@ -181,9 +185,10 @@ def process_string_gui(input_entry:tk.Entry, slide_tape:TkSlideTape, success_lab
         def turing_step(state:State, pos:int) -> None:
             nonlocal slide_tape
             nonlocal turing_tape
-            if state==State.qf:
+            if state == State.qf:
+                slide_tape.update_state_display(state)
                 success_label.config(text="Cadena Valida")
-                return 
+                return
             output:TuringOutput = delta(TuringInput(state, Symbol(turing_tape[pos])))
             if not output or pos not in range(len(turing_tape)):
                 success_label.config(text="Cadena Invalida")
